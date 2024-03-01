@@ -613,8 +613,10 @@ const renderSpinner = (parentEl)=>{
 // Function to fecthing Data from an external API
 const ShowRecipe = async function() {
     try {
+        const id = window.location.hash.slice(1);
+        if (!id) return;
         renderSpinner(recipeContainer);
-        const response = await fetch("https://forkify-api.herokuapp.com/api/v2/recipes/5ed6604591c37cdc054bc886");
+        const response = await fetch(` https://forkify-api.herokuapp.com/api/v2/recipes/${id}`);
         const data = await response.json();
         if (!response.ok) throw new Error(`${data.message} (${response.status})`);
         let { recipe } = data.data;
@@ -721,7 +723,10 @@ const ShowRecipe = async function() {
         alert(err.message);
     }
 };
-ShowRecipe();
+[
+    "hashchange",
+    "load"
+].forEach((ev)=>window.addEventListener(ev, ShowRecipe));
 
 },{"url:../img/icons.svg":"loVOp","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","core-js/modules/web.immediate.js":"49tUX","regenerator-runtime/runtime":"dXNgZ"}],"loVOp":[function(require,module,exports) {
 module.exports = require("9bcc84ee5d265e38").getBundleURL("hWUTQ") + "icons.dfd7a6db.svg" + "?" + Date.now();
