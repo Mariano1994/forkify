@@ -1,3 +1,6 @@
+import { BASE_API_URL } from "./config";
+import { getJSON } from "./helpers";
+
 export const state = {
   recipe: {},
 };
@@ -5,11 +8,7 @@ export const state = {
 // Function to fecthing Data from an external API
 export const loadRecipe = async function (id) {
   try {
-    const response = await fetch(
-      ` https://forkify-api.herokuapp.com/api/v2/recipes/${id}`
-    );
-    const data = await response.json();
-    if (!response.ok) throw new Error(`${data.message} (${response.status})`);
+    const data = await getJSON(`${BASE_API_URL}/${id}`);
 
     // Based on the  fetching result we create a new recipe object with only need information
 
@@ -25,9 +24,8 @@ export const loadRecipe = async function (id) {
       cookingTime: recipe.cooking_time,
       ingredients: recipe.ingredients,
     };
-
-    console.log(state.recipe);
   } catch (err) {
-    alert(err.message);
+    //  Temporary error handling
+    console.error(`${err} jhjkfh`);
   }
 };
