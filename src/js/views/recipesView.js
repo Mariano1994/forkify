@@ -24,8 +24,8 @@ class RecipeView {
   <svg>
     <use href="${icons}#icon-loader"></use>
   </svg>
-</div> 
-`;
+  </div> 
+  `;
     this.#clear;
     this.#parentElement.insertAdjacentHTML("afterbegin", markup);
   }
