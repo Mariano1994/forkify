@@ -602,13 +602,13 @@ const controlRecipes = async function() {
         (0, _recipesViewJsDefault.default).render(_modelJs.state.recipe);
     // Functionality to render the recipe
     } catch (err) {
-        alert(err.message);
+        (0, _recipesViewJsDefault.default).renderError();
     }
 };
-[
-    "hashchange",
-    "load"
-].forEach((ev)=>window.addEventListener(ev, controlRecipes));
+const init = function() {
+    (0, _recipesViewJsDefault.default).addHandlerRender(controlRecipes);
+};
+init();
 
 },{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","core-js/modules/web.immediate.js":"49tUX","regenerator-runtime/runtime":"dXNgZ","./model.js":"Y4A21","./views/recipesView.js":"iLzNb"}],"gkKU3":[function(require,module,exports) {
 exports.interopDefault = function(a) {
@@ -2484,8 +2484,7 @@ const loadRecipe = async function(id) {
             ingredients: recipe.ingredients
         };
     } catch (err) {
-        //  Temporary error handling
-        console.error(`${err} jhjkfh`);
+        throw err;
     }
 };
 
@@ -2494,12 +2493,15 @@ const loadRecipe = async function(id) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "BASE_API_URL", ()=>BASE_API_URL);
+parcelHelpers.export(exports, "TIME_OUT", ()=>TIME_OUT);
 const BASE_API_URL = `https://forkify-api.herokuapp.com/api/v2/recipes/`;
+const TIME_OUT = 10;
 
 },{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"hGI1E":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "getJSON", ()=>getJSON);
+var _config = require("./config");
 const timeout = function(s) {
     return new Promise(function(_, reject) {
         setTimeout(function() {
@@ -2509,7 +2511,10 @@ const timeout = function(s) {
 };
 const getJSON = async function(url) {
     try {
-        const response = await fetch(url);
+        const response = await Promise.race([
+            fetch(url),
+            timeout((0, _config.TIME_OUT))
+        ]);
         const data = await response.json();
         if (!response.ok) throw new Error(`${data.message} (${response.status})`);
         return data;
@@ -2518,7 +2523,7 @@ const getJSON = async function(url) {
     }
 };
 
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"iLzNb":[function(require,module,exports) {
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","./config":"k5Hzs"}],"iLzNb":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 var _iconsSvg = require("../../img/icons.svg");
@@ -2527,6 +2532,8 @@ var _fractional = require("fractional");
 class RecipeView {
     #parentElement = document.querySelector(".recipe");
     #data;
+    #ErrorMessage = `We could not find the recipe. Plase try another one`;
+    #SuccessMessage = "";
     render(data) {
         this.#data = data;
         const markup = this.#generateMarkup();
@@ -2537,7 +2544,7 @@ class RecipeView {
         this.#parentElement.innerHTML = "";
     }
     // FUNCTION TO CREATE A SPINNER
-    renderSpinner = ()=>{
+    renderSpinner() {
         const markup = `<div class="spinner">
   <svg>
     <use href="${(0, _iconsSvgDefault.default)}#icon-loader"></use>
@@ -2546,7 +2553,40 @@ class RecipeView {
 `;
         this.#clear;
         this.#parentElement.insertAdjacentHTML("afterbegin", markup);
-    };
+    }
+    addHandlerRender(handle) {
+        [
+            "hashchange",
+            "load"
+        ].forEach((ev)=>window.addEventListener(ev, handle));
+    }
+    renderError(message = this.#ErrorMessage) {
+        const markup = `
+          <div class="error">
+            <div>
+              <svg>
+                <use href="${(0, _iconsSvgDefault.default)}#icon-alert-triangle"></use>
+              </svg>
+            </div>
+            <p>${message}</p>
+          </div>
+        `;
+        this.#clear();
+        this.#parentElement.insertAdjacentHTML("afterbegin", markup);
+    }
+    renderSuccessMessage(message = this.#SuccessMessage) {
+        const markup = `
+    <div class="error">
+            <div>
+              <svg>
+                <use href="${(0, _iconsSvgDefault.default)}#icon-smile"></use>
+              </svg>
+            </div>
+            <p>${message}</p>
+          </div>`;
+        this.#clear;
+        this.#parentElement.insertAdjacentHTML("afterbegin", markup);
+    }
     #generateMarkup() {
         return `<figure class="recipe__fig">
     <img src="${this.#data.image}" alt="${this.#data.title}" class="recipe__img" />
