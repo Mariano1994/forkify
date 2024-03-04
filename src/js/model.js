@@ -38,7 +38,6 @@ export const loadSearchResults = async function (query) {
   try {
     state.search.query = query;
     const data = await getJSON(`${BASE_API_URL}?search=${query}`);
-    console.log(data);
 
     state.search.results = data.data.recipes.map((recipe) => {
       return {
@@ -51,7 +50,6 @@ export const loadSearchResults = async function (query) {
 
     // console.log(state.search.results);
   } catch (err) {
-    console.log(err);
     throw err;
   }
 };
