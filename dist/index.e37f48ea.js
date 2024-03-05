@@ -594,7 +594,6 @@ var _searchViewJsDefault = parcelHelpers.interopDefault(_searchViewJs);
 var _resultsViewJs = require("./views/resultsView.js");
 var _resultsViewJsDefault = parcelHelpers.interopDefault(_resultsViewJs);
 var _runtime = require("regenerator-runtime/runtime");
-if (module.hot) module.hot.accept();
 const controlRecipes = async function() {
     try {
         const id = window.location.hash.slice(1);
@@ -614,7 +613,7 @@ const controlSearchResults = async function() {
         const query = (0, _searchViewJsDefault.default).getQuery();
         if (!query) return;
         await _modelJs.loadSearchResults(query);
-        (0, _resultsViewJsDefault.default).render(_modelJs.state.search.results);
+        (0, _resultsViewJsDefault.default).render(_modelJs.getSearchResultsPage());
     } catch (error) {
         console.log(error);
     }
@@ -2479,13 +2478,16 @@ parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "state", ()=>state);
 parcelHelpers.export(exports, "loadRecipe", ()=>loadRecipe);
 parcelHelpers.export(exports, "loadSearchResults", ()=>loadSearchResults);
+parcelHelpers.export(exports, "getSearchResultsPage", ()=>getSearchResultsPage);
 var _config = require("./config");
 var _helpers = require("./helpers");
 const state = {
     recipe: {},
     search: {
         query: "",
-        results: []
+        results: [],
+        CurrentPage: 1,
+        resultsPerPage: (0, _config.RES_PER_PAGE)
     }
 };
 const loadRecipe = async function(id) {
@@ -2524,6 +2526,12 @@ const loadSearchResults = async function(query) {
         throw err;
     }
 };
+const getSearchResultsPage = function(page = state.search.CurrentPage) {
+    state.search.CurrentPage = page;
+    const start = (page - 1) * state.search.resultsPerPage;
+    const end = page * state.search.resultsPerPage;
+    return state.search.results.slice(start, end);
+};
 
 },{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","./config":"k5Hzs","./helpers":"hGI1E"}],"k5Hzs":[function(require,module,exports) {
 // GLOBAL VARIABLES
@@ -2531,8 +2539,10 @@ var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "BASE_API_URL", ()=>BASE_API_URL);
 parcelHelpers.export(exports, "TIME_OUT", ()=>TIME_OUT);
+parcelHelpers.export(exports, "RES_PER_PAGE", ()=>RES_PER_PAGE);
 const BASE_API_URL = `https://forkify-api.herokuapp.com/api/v2/recipes/`;
 const TIME_OUT = 10;
+const RES_PER_PAGE = 10;
 
 },{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"hGI1E":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
@@ -3042,8 +3052,7 @@ var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 var _view = require("./View");
 var _viewDefault = parcelHelpers.interopDefault(_view);
-var _iconsSvg = require("../../img/icons.svg");
-var _iconsSvgDefault = parcelHelpers.interopDefault(_iconsSvg);
+// import icons from "../../img/icons.svg";
 class ResultsView extends (0, _viewDefault.default) {
     _parentElement = document.querySelector(".results");
     _ErrorMessage = `No recipes found for yout query! Please try again`;
@@ -3070,6 +3079,6 @@ class ResultsView extends (0, _viewDefault.default) {
 }
 exports.default = new ResultsView();
 
-},{"./View":"5cUXS","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","../../img/icons.svg":"cMpiy"}]},["hycaY","aenu9"], "aenu9", "parcelRequire3a11")
+},{"./View":"5cUXS","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}]},["hycaY","aenu9"], "aenu9", "parcelRequire3a11")
 
 //# sourceMappingURL=index.e37f48ea.js.map
