@@ -2529,7 +2529,6 @@ const loadSearchResults = async function(query) {
                 image: recipe.image_url
             };
         });
-    // console.log(state.search.results);
     } catch (err) {
         throw err;
     }
@@ -3107,8 +3106,6 @@ class PaginatinoView extends (0, _viewDefault.default) {
     _generateMarkup() {
         const currentPage = this._data.currentPage;
         const numPages = Math.ceil(this._data.results.length / this._data.resultsPerPage);
-        console.log(numPages);
-        console.log(this._data.currentPage);
         if (currentPage === 1 && numPages > 1) return `
           <button data-goto="${currentPage + 1}" class="btn--inline pagination__btn--next">
             <span>Page ${currentPage + 1}</span>

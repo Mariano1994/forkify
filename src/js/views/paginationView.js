@@ -17,8 +17,7 @@ class PaginatinoView extends View {
     const numPages = Math.ceil(
       this._data.results.length / this._data.resultsPerPage
     );
-    console.log(numPages);
-    console.log(this._data.currentPage);
+
     if (currentPage === 1 && numPages > 1) {
       return `
           <button data-goto="${
