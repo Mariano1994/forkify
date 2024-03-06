@@ -601,6 +601,7 @@ const controlRecipes = async function() {
         const id = window.location.hash.slice(1);
         if (!id) return;
         (0, _recipesViewJsDefault.default).renderSpinner();
+        (0, _resultsViewJsDefault.default).update(_modelJs.getSearchResultsPage());
         await _modelJs.loadRecipe(id);
         // Rendering Recipe
         (0, _recipesViewJsDefault.default).render(_modelJs.state.recipe);
@@ -3015,7 +3016,6 @@ class View {
         this._parentElement.innerHTML = "";
     }
     update(data) {
-        if (!data || Array.isArray(data) && data.length === 0) return this.renderError();
         this._data = data;
         const updatedMarkup = this._generateMarkup();
         const newDOM = document.createRange().createContextualFragment(updatedMarkup);
@@ -3105,9 +3105,13 @@ class ResultsView extends (0, _viewDefault.default) {
         return this._data.map(this._generateMarkupPreview).join("");
     }
     _generateMarkupPreview(result) {
+        const id = window.location.hash.slice(1);
+        console.log(id);
+        console.log(result.id);
         return `
     <li class="preview">
-    <a class="preview__link" href="#${result.id}">
+    <a class="preview__link ${result.id === id ? "preview__link--active" : ""}" 
+     href="#${result.id}">
       <figure class="preview__fig">
         <img src="${result.image}" alt="${result.title}" />
       </figure>
