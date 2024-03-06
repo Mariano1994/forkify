@@ -627,7 +627,8 @@ const controlPagination = function(goToPage) {
 };
 const controlServings = function(newServings) {
     _modelJs.updateServing(newServings);
-    (0, _recipesViewJsDefault.default).render(_modelJs.state.recipe);
+    // recipesView.render(model.state.recipe);
+    (0, _recipesViewJsDefault.default).update(_modelJs.state.recipe);
 };
 const init = function() {
     (0, _recipesViewJsDefault.default).addHandlerRender(controlRecipes);
@@ -3012,6 +3013,21 @@ class View {
     }
     _clear() {
         this._parentElement.innerHTML = "";
+    }
+    update(data) {
+        if (!data || Array.isArray(data) && data.length === 0) return this.renderError();
+        this._data = data;
+        const updatedMarkup = this._generateMarkup();
+        const newDOM = document.createRange().createContextualFragment(updatedMarkup);
+        const newElements = Array.from(newDOM.querySelectorAll("*"));
+        const currentElements = Array.from(this._parentElement.querySelectorAll("*"));
+        newElements.forEach((newElement, index)=>{
+            const currentElement = currentElements[index];
+            // Updates changed Texts
+            if (!newElement.isEqualNode(currentElement) && newElement.firstChild?.nodeValue.trim() !== "") currentElement.textContent = newElement.textContent;
+            // Updates changed Atrributs
+            if (!newElement.isEqualNode(currentElement)) Array.from(newElement.attributes).forEach((attribute)=>currentElement.setAttribute(attribute.name, attribute.value));
+        });
     }
     // FUNCTION TO CREATE A SPINNER
     renderSpinner() {
