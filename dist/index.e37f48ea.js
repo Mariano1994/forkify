@@ -625,8 +625,13 @@ const controlPagination = function(goToPage) {
     (0, _resultsViewJsDefault.default).render(_modelJs.getSearchResultsPage(goToPage));
     (0, _paginationViewJsDefault.default).render(_modelJs.state.search);
 };
+const controlServings = function(newServings) {
+    _modelJs.updateServing(newServings);
+    (0, _recipesViewJsDefault.default).render(_modelJs.state.recipe);
+};
 const init = function() {
     (0, _recipesViewJsDefault.default).addHandlerRender(controlRecipes);
+    (0, _recipesViewJsDefault.default).addHandlerUpdateServings(controlServings);
     (0, _searchViewJsDefault.default).addHandlerSearch(controlSearchResults);
     (0, _paginationViewJsDefault.default).addHandlerClickButton(controlPagination);
 };
@@ -2487,6 +2492,7 @@ parcelHelpers.export(exports, "state", ()=>state);
 parcelHelpers.export(exports, "loadRecipe", ()=>loadRecipe);
 parcelHelpers.export(exports, "loadSearchResults", ()=>loadSearchResults);
 parcelHelpers.export(exports, "getSearchResultsPage", ()=>getSearchResultsPage);
+parcelHelpers.export(exports, "updateServing", ()=>updateServing);
 var _config = require("./config");
 var _helpers = require("./helpers");
 const state = {
@@ -2539,6 +2545,12 @@ const getSearchResultsPage = function(page = state.search.currentPage) {
     const end = page * state.search.resultsPerPage;
     return state.search.results.slice(start, end);
 };
+const updateServing = function(newServings) {
+    state.recipe.ingredients.forEach((ingre)=>{
+        ingre.quantity = ingre.quantity * newServings / state.recipe.servings;
+    });
+    state.recipe.servings = newServings;
+};
 
 },{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","./config":"k5Hzs","./helpers":"hGI1E"}],"k5Hzs":[function(require,module,exports) {
 // GLOBAL VARIABLES
@@ -2589,6 +2601,15 @@ class RecipeView extends (0, _viewDefault.default) {
     _parentElement = document.querySelector(".recipe");
     _ErrorMessage = `We could not find the recipe. Plase try another one`;
     _SuccessMessage = "";
+    addHandlerUpdateServings(handle) {
+        this._parentElement.addEventListener("click", function(e) {
+            const button = e.target.closest(".btn--update-servings");
+            if (!button) return;
+            const updateTo = +button.dataset.updateTo;
+            if (updateTo < 1) return alert("Must have at least one serving");
+            handle(updateTo);
+        });
+    }
     _generateMarkup() {
         return `<figure class="recipe__fig">
     <img src="${this._data.image}" alt="${this._data.title}" class="recipe__img" />
@@ -2613,14 +2634,14 @@ class RecipeView extends (0, _viewDefault.default) {
       <span class="recipe__info-text">servings</span>
 
       <div class="recipe__info-buttons">
-        <button class="btn--tiny btn--increase-servings">
+        <button class="btn--tiny btn--update-servings" data-update-to="${this._data.servings - 1}">
           <svg>
-            <use href="src/img/icons.svg#icon-minus-circle"></use>
+            <use href="${0, _iconsSvgDefault.default}}#icon-minus-circle"></use>
           </svg>
         </button>
-        <button class="btn--tiny btn--increase-servings">
+        <button class="btn--tiny btn--update-servings" data-update-to="${this._data.servings + 1}">
           <svg>
-            <use href="src/img/icons.svg#icon-plus-circle"></use>
+            <use href="${0, _iconsSvgDefault.default}#icon-plus-circle"></use>
           </svg>
         </button>
       </div>
