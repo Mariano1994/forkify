@@ -631,9 +631,15 @@ const controlServings = function(newServings) {
     // recipesView.render(model.state.recipe);
     (0, _recipesViewJsDefault.default).update(_modelJs.state.recipe);
 };
+const controlAddBookmark = function() {
+    if (!_modelJs.state.recipe.bookmarked) _modelJs.addBookmark(_modelJs.state.recipe);
+    else _modelJs.deleteBookmark(_modelJs.state.recipe.id);
+    (0, _recipesViewJsDefault.default).update(_modelJs.state.recipe);
+};
 const init = function() {
     (0, _recipesViewJsDefault.default).addHandlerRender(controlRecipes);
     (0, _recipesViewJsDefault.default).addHandlerUpdateServings(controlServings);
+    (0, _recipesViewJsDefault.default).addHandlerAddBookMark(controlAddBookmark);
     (0, _searchViewJsDefault.default).addHandlerSearch(controlSearchResults);
     (0, _paginationViewJsDefault.default).addHandlerClickButton(controlPagination);
 };
@@ -2495,6 +2501,8 @@ parcelHelpers.export(exports, "loadRecipe", ()=>loadRecipe);
 parcelHelpers.export(exports, "loadSearchResults", ()=>loadSearchResults);
 parcelHelpers.export(exports, "getSearchResultsPage", ()=>getSearchResultsPage);
 parcelHelpers.export(exports, "updateServing", ()=>updateServing);
+parcelHelpers.export(exports, "addBookmark", ()=>addBookmark);
+parcelHelpers.export(exports, "deleteBookmark", ()=>deleteBookmark);
 var _config = require("./config");
 var _helpers = require("./helpers");
 const state = {
@@ -2504,7 +2512,8 @@ const state = {
         results: [],
         currentPage: 1,
         resultsPerPage: (0, _config.RES_PER_PAGE)
-    }
+    },
+    bookmarks: []
 };
 const loadRecipe = async function(id) {
     try {
@@ -2521,6 +2530,8 @@ const loadRecipe = async function(id) {
             cookingTime: recipe.cooking_time,
             ingredients: recipe.ingredients
         };
+        if (state.bookmarks.some((bookmark)=>bookmark.id === id)) state.recipe.bookmarked = true;
+        else state.recipe.bookmarked = false;
     } catch (err) {
         throw err;
     }
@@ -2553,6 +2564,18 @@ const updateServing = function(newServings) {
         ingre.quantity = ingre.quantity * newServings / state.recipe.servings;
     });
     state.recipe.servings = newServings;
+};
+const addBookmark = function(recipe) {
+    // Add Bookmark
+    state.bookmarks.push(recipe);
+    console.log(state.bookmarks);
+    // Mark current recipe as bookmark
+    if (recipe.id === state.recipe.id) state.recipe.bookmarked = true;
+};
+const deleteBookmark = function(id) {
+    const index = state.bookmarks.findIndex((element)=>element.id === id);
+    state.bookmarks.splice(index, 1);
+    if (id === state.recipe.id) state.recipe.bookmarked = false;
 };
 
 },{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","./config":"k5Hzs","./helpers":"hGI1E"}],"k5Hzs":[function(require,module,exports) {
@@ -2613,6 +2636,14 @@ class RecipeView extends (0, _viewDefault.default) {
             handle(updateTo);
         });
     }
+    addHandlerAddBookMark(handle) {
+        this._parentElement.addEventListener("click", (event)=>{
+            const button = event.target.closest(".btn--bookmark");
+            if (!button) return;
+            console.log(button);
+            handle();
+        });
+    }
     _generateMarkup() {
         return `<figure class="recipe__fig">
     <img src="${this._data.image}" alt="${this._data.title}" class="recipe__img" />
@@ -2653,9 +2684,9 @@ class RecipeView extends (0, _viewDefault.default) {
     <div class="recipe__user-generated">
 
     </div>
-    <button class="btn--round">
+    <button class="btn--round btn--bookmark">
       <svg class="">
-        <use href="${0, _iconsSvgDefault.default}#icon-bookmark-fill"></use>
+        <use href="${0, _iconsSvgDefault.default}#icon-bookmark${this._data.bookmarked ? "-fill" : ""}"></use>
       </svg>
     </button>
   </div>
@@ -3107,8 +3138,6 @@ class ResultsView extends (0, _viewDefault.default) {
     }
     _generateMarkupPreview(result) {
         const id = window.location.hash.slice(1);
-        console.log(id);
-        console.log(result.id);
         return `
     <li class="preview">
     <a class="preview__link ${result.id === id ? "preview__link--active" : ""}" 

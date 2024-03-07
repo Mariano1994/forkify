@@ -10,6 +10,7 @@ export const state = {
     currentPage: 1,
     resultsPerPage: RES_PER_PAGE,
   },
+  bookmarks: [],
 };
 
 // Function to fecthing Data from an external API
@@ -31,6 +32,10 @@ export const loadRecipe = async function (id) {
       cookingTime: recipe.cooking_time,
       ingredients: recipe.ingredients,
     };
+
+    if (state.bookmarks.some((bookmark) => bookmark.id === id))
+      state.recipe.bookmarked = true;
+    else state.recipe.bookmarked = false;
   } catch (err) {
     throw err;
   }
@@ -71,4 +76,22 @@ export const updateServing = function (newServings) {
   });
 
   state.recipe.servings = newServings;
+};
+
+export const addBookmark = function (recipe) {
+  // Add Bookmark
+  state.bookmarks.push(recipe);
+  console.log(state.bookmarks);
+
+  // Mark current recipe as bookmark
+  if (recipe.id === state.recipe.id) {
+    state.recipe.bookmarked = true;
+  }
+};
+
+export const deleteBookmark = function (id) {
+  const index = state.bookmarks.findIndex((element) => element.id === id);
+  state.bookmarks.splice(index, 1);
+
+  if (id === state.recipe.id) state.recipe.bookmarked = false;
 };
