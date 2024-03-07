@@ -24,7 +24,6 @@ class RecipeView extends View {
     this._parentElement.addEventListener("click", (event) => {
       const button = event.target.closest(".btn--bookmark");
       if (!button) return;
-      console.log(button);
       handle();
     });
   }
