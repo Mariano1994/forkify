@@ -1,6 +1,7 @@
 import { BASE_API_URL } from "./config";
-import { getJSON } from "./helpers";
+import { getJSON, sendJSON } from "./helpers";
 import { RES_PER_PAGE } from "./config";
+import { KEY } from "./config";
 
 export const state = {
   recipe: {},
@@ -150,7 +151,8 @@ export const uploadRecipes = async function (newRecipe) {
       ingredients,
     };
 
-    console.log(recipe);
+    const data = await sendJSON(`${BASE_API_URL}?key=${KEY}`, recipe);
+    console.log(data);
   } catch (err) {
     throw err;
   }

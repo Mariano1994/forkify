@@ -2634,7 +2634,8 @@ const uploadRecipes = async function(newRecipe) {
             servings: +newRecipe.servings,
             ingredients
         };
-        console.log(recipe);
+        const data = await (0, _helpers.sendJSON)(`${(0, _config.BASE_API_URL)}?key=${(0, _config.KEY)}`, recipe);
+        console.log(data);
     } catch (err) {
         throw err;
     }
@@ -2647,14 +2648,17 @@ parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "BASE_API_URL", ()=>BASE_API_URL);
 parcelHelpers.export(exports, "TIME_OUT", ()=>TIME_OUT);
 parcelHelpers.export(exports, "RES_PER_PAGE", ()=>RES_PER_PAGE);
+parcelHelpers.export(exports, "KEY", ()=>KEY);
 const BASE_API_URL = `https://forkify-api.herokuapp.com/api/v2/recipes/`;
 const TIME_OUT = 10;
 const RES_PER_PAGE = 10;
+const KEY = "7df1a3d0-5162-4e88-8f43-39a9b80db8f4";
 
 },{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"hGI1E":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "getJSON", ()=>getJSON);
+parcelHelpers.export(exports, "sendJSON", ()=>sendJSON);
 var _config = require("./config");
 const timeout = function(s) {
     return new Promise(function(_, reject) {
@@ -2674,6 +2678,26 @@ const getJSON = async function(url) {
         return data;
     } catch (err) {
         throw err;
+    }
+};
+const sendJSON = async function(url, uploadData) {
+    try {
+        const fetchPro = fetch(url, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(uploadData)
+        });
+        const response = await Promise.race([
+            fetchPro,
+            timeout((0, _config.TIME_OUT))
+        ]);
+        const data = await response.json();
+        if (!response.ok) throw new Error(`${data.message} (${response.status})`);
+        return data;
+    } catch (error) {
+        throw error;
     }
 };
 
