@@ -648,6 +648,14 @@ const controlAddBookmark = function() {
 const controlBookmarks = function() {
     (0, _bookmarksViewJsDefault.default).render(_modelJs.state.bookmarks);
 };
+const controlAddNewRecipe = async function(newRecipe) {
+    try {
+        await _modelJs.uploadRecipes(newRecipe);
+    } catch (error) {
+        console.error(error);
+        (0, _addRecipesViewJsDefault.default).renderError(error.message);
+    }
+};
 const init = function() {
     (0, _bookmarksViewJsDefault.default).addHandlerRender(controlBookmarks);
     (0, _recipesViewJsDefault.default).addHandlerRender(controlRecipes);
@@ -655,6 +663,7 @@ const init = function() {
     (0, _recipesViewJsDefault.default).addHandlerAddBookMark(controlAddBookmark);
     (0, _searchViewJsDefault.default).addHandlerSearch(controlSearchResults);
     (0, _paginationViewJsDefault.default).addHandlerClickButton(controlPagination);
+    (0, _addRecipesViewJsDefault.default).addHandlerUploadFormData(controlAddNewRecipe);
 };
 init();
 
@@ -2516,6 +2525,7 @@ parcelHelpers.export(exports, "getSearchResultsPage", ()=>getSearchResultsPage);
 parcelHelpers.export(exports, "updateServing", ()=>updateServing);
 parcelHelpers.export(exports, "addBookmark", ()=>addBookmark);
 parcelHelpers.export(exports, "deleteBookmark", ()=>deleteBookmark);
+parcelHelpers.export(exports, "uploadRecipes", ()=>uploadRecipes);
 var _config = require("./config");
 var _helpers = require("./helpers");
 const state = {
@@ -2599,11 +2609,36 @@ const getBookmarkFromLocalStorege = function() {
     const data = localStorage.getItem("bookmarks");
     if (data) state.bookmarks = JSON.parse(data);
 };
-getBookmarkFromLocalStorege(); // Function to clear all bookmarks / We're not using this function for now
- // const clearBookMarks = function () {
- //   localStorage.clear("bookmarks");
- // };
- // clearBookMarks();
+getBookmarkFromLocalStorege();
+const uploadRecipes = async function(newRecipe) {
+    // console.log(Object.entries(newRecipe));
+    try {
+        const ingredients = Object.entries(newRecipe).filter((entry)=>{
+            return entry[0].startsWith("ingredient") && entry[1] !== "";
+        }).map((ingredient)=>{
+            const ingredientArray = ingredient[1].replaceAll("", "").split(",");
+            if (ingredientArray.length !== 3) throw new Error("Wrong ingredit format! Please use the correct format");
+            const [quantity, unit, description] = ingredientArray;
+            return {
+                quantity: quantity ? +quantity : null,
+                unit,
+                description
+            };
+        });
+        const recipe = {
+            title: newRecipe.title,
+            source_url: newRecipe.sourceUrl,
+            image_url: newRecipe.image,
+            publisher: newRecipe.publisher,
+            cooking_time: +newRecipe.cookingTime,
+            servings: +newRecipe.servings,
+            ingredients
+        };
+        console.log(recipe);
+    } catch (err) {
+        throw err;
+    }
+};
 
 },{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","./config":"k5Hzs","./helpers":"hGI1E"}],"k5Hzs":[function(require,module,exports) {
 // GLOBAL VARIABLES
@@ -3305,6 +3340,16 @@ class AddRecipeView extends (0, _viewDefault.default) {
     _addHandlerCloseModal() {
         this._buttonToCloseModal.addEventListener("click", this.toggleWindow.bind(this));
         this._overlay.addEventListener("click", this.toggleWindow.bind(this));
+    }
+    addHandlerUploadFormData(handler) {
+        this._parentElement.addEventListener("submit", function(event) {
+            event.preventDefault();
+            const dataArr = [
+                ...new FormData(this)
+            ];
+            const data = Object.fromEntries(dataArr);
+            handler(data);
+        });
     }
     _generateMarkup() {}
 }
