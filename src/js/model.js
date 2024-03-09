@@ -33,7 +33,7 @@ const createRecipeObject = function (data) {
 // Function to fecthing Data from an external API
 export const loadRecipe = async function (id) {
   try {
-    const data = await getJSON(`${BASE_API_URL}${id}`);
+    const data = await getJSON(`${BASE_API_URL}${id}?key=${KEY}`);
 
     state.recipe = createRecipeObject(data);
 
@@ -51,7 +51,7 @@ export const loadRecipe = async function (id) {
 export const loadSearchResults = async function (query) {
   try {
     state.search.query = query;
-    const data = await getJSON(`${BASE_API_URL}?search=${query}`);
+    const data = await getJSON(`${BASE_API_URL}?search=${query}&key=${KEY}`);
 
     state.search.results = data.data.recipes.map((recipe) => {
       return {
@@ -59,6 +59,7 @@ export const loadSearchResults = async function (query) {
         title: recipe.title,
         publisher: recipe.publisher,
         image: recipe.image_url,
+        ...(recipe.key && { key: recipe.key }),
       };
     });
 
@@ -132,7 +133,7 @@ export const uploadRecipes = async function (newRecipe) {
         return entry[0].startsWith("ingredient") && entry[1] !== "";
       })
       .map((ingredient) => {
-        const ingredientArray = ingredient[1].replaceAll("", "").split(",");
+        const ingredientArray = ingredient[1].split(",").map((el) => el.trim());
 
         if (ingredientArray.length !== 3)
           throw new Error(

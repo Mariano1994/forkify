@@ -1,5 +1,5 @@
 import View from "./View";
-// import icons from "../../img/icons.svg";
+import icons from "../../img/icons.svg";
 class ResultsView extends View {
   _parentElement = document.querySelector(".results");
   _ErrorMessage = `No recipes found for yout query! Please try again`;
@@ -20,6 +20,14 @@ class ResultsView extends View {
         <h4 class="preview__title">${result.title}</h4>
         <p class="preview__publisher">${result.publisher}</p>
       </div>
+
+      <div class="preview__user-generated ${result.key ? "" : "hidden"}">
+     
+      <svg>
+          <use href="${icons}#icon-user"></use>
+      </svg>
+      </div>
+      
     </a>
   </li>
     

@@ -656,6 +656,10 @@ const controlAddNewRecipe = async function(newRecipe) {
         console.log(_modelJs.state.recipe);
         (0, _recipesViewJsDefault.default).render(_modelJs.state.recipe);
         (0, _addRecipesViewJsDefault.default).renderSuccessMessage();
+        // Render Bookmarks
+        (0, _bookmarksViewJsDefault.default).render(_modelJs.state.bookmarks);
+        //Change the ID in the URL
+        window.history.pushState(null, "", `#${_modelJs.state.recipe.id}`);
         //Close Form
         setTimeout(()=>{
             (0, _addRecipesViewJsDefault.default).toggleWindow();
@@ -2565,7 +2569,7 @@ const createRecipeObject = function(data) {
 };
 const loadRecipe = async function(id) {
     try {
-        const data = await (0, _helpers.getJSON)(`${(0, _config.BASE_API_URL)}${id}`);
+        const data = await (0, _helpers.getJSON)(`${(0, _config.BASE_API_URL)}${id}?key=${(0, _config.KEY)}`);
         state.recipe = createRecipeObject(data);
         // Based on the  fetching result we create a new recipe object with only need information
         if (state.bookmarks.some((bookmark)=>bookmark.id === id)) state.recipe.bookmarked = true;
@@ -2577,13 +2581,16 @@ const loadRecipe = async function(id) {
 const loadSearchResults = async function(query) {
     try {
         state.search.query = query;
-        const data = await (0, _helpers.getJSON)(`${(0, _config.BASE_API_URL)}?search=${query}`);
+        const data = await (0, _helpers.getJSON)(`${(0, _config.BASE_API_URL)}?search=${query}&key=${(0, _config.KEY)}`);
         state.search.results = data.data.recipes.map((recipe)=>{
             return {
                 id: recipe.id,
                 title: recipe.title,
                 publisher: recipe.publisher,
-                image: recipe.image_url
+                image: recipe.image_url,
+                ...recipe.key && {
+                    key: recipe.key
+                }
             };
         });
         state.search.currentPage = 1;
@@ -2631,7 +2638,7 @@ const uploadRecipes = async function(newRecipe) {
         const ingredients = Object.entries(newRecipe).filter((entry)=>{
             return entry[0].startsWith("ingredient") && entry[1] !== "";
         }).map((ingredient)=>{
-            const ingredientArray = ingredient[1].replaceAll("", "").split(",");
+            const ingredientArray = ingredient[1].split(",").map((el)=>el.trim());
             if (ingredientArray.length !== 3) throw new Error("Wrong ingredit format! Please use the correct format");
             const [quantity, unit, description] = ingredientArray;
             return {
@@ -2784,8 +2791,10 @@ class RecipeView extends (0, _viewDefault.default) {
       </div>
     </div>
 
-    <div class="recipe__user-generated">
-
+    <div class="recipe__user-generated ${this._data.key ? "" : "hidden"}">
+    <svg>
+        <use href="${0, _iconsSvgDefault.default}#icon-user"></use>
+    </svg>
     </div>
     <button class="btn--round btn--bookmark">
       <svg class="">
@@ -3231,7 +3240,8 @@ var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 var _view = require("./View");
 var _viewDefault = parcelHelpers.interopDefault(_view);
-// import icons from "../../img/icons.svg";
+var _iconsSvg = require("../../img/icons.svg");
+var _iconsSvgDefault = parcelHelpers.interopDefault(_iconsSvg);
 class ResultsView extends (0, _viewDefault.default) {
     _parentElement = document.querySelector(".results");
     _ErrorMessage = `No recipes found for yout query! Please try again`;
@@ -3252,6 +3262,14 @@ class ResultsView extends (0, _viewDefault.default) {
         <h4 class="preview__title">${result.title}</h4>
         <p class="preview__publisher">${result.publisher}</p>
       </div>
+
+      <div class="preview__user-generated ${result.key ? "" : "hidden"}">
+     
+      <svg>
+          <use href="${0, _iconsSvgDefault.default}#icon-user"></use>
+      </svg>
+      </div>
+      
     </a>
   </li>
     
@@ -3260,7 +3278,7 @@ class ResultsView extends (0, _viewDefault.default) {
 }
 exports.default = new ResultsView();
 
-},{"./View":"5cUXS","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"6z7bi":[function(require,module,exports) {
+},{"./View":"5cUXS","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","../../img/icons.svg":"cMpiy"}],"6z7bi":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 var _view = require("./View");
@@ -3322,7 +3340,8 @@ var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 var _view = require("./View");
 var _viewDefault = parcelHelpers.interopDefault(_view);
-// import icons from "../../img/icons.svg";
+var _iconsSvg = require("../../img/icons.svg");
+var _iconsSvgDefault = parcelHelpers.interopDefault(_iconsSvg);
 class BookmarksView extends (0, _viewDefault.default) {
     _parentElement = document.querySelector(".bookmarks__list");
     _ErrorMessage = `No bookmark yet. Find a nice recipe and bookmark it \u{1F609}`;
@@ -3344,8 +3363,15 @@ class BookmarksView extends (0, _viewDefault.default) {
       </figure>
       <div class="preview__data">
         <h4 class="preview__title">${result.title}</h4>
-        <p class="preview__publisher">${result.publisher}</p>
+        <p class="preview__publisher">${result.publisher}</p>  
+        
+        <div class="recipe__user-generated ${result.key ? "" : "hidden"}">
+        <svg>
+            <use href="${0, _iconsSvgDefault.default}#icon-user"></use>
+        </svg>
+        </div>
       </div>
+     
     </a>
   </li>
     
@@ -3354,7 +3380,7 @@ class BookmarksView extends (0, _viewDefault.default) {
 }
 exports.default = new BookmarksView();
 
-},{"./View":"5cUXS","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"3YU46":[function(require,module,exports) {
+},{"./View":"5cUXS","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","../../img/icons.svg":"cMpiy"}],"3YU46":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 var _view = require("./View");
